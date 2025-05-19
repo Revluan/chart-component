@@ -1,7 +1,8 @@
 ---
 title: Chart基础图表组件
+order: 1
 nav:
-  title: 组件
+  title: 图表组件
   path: /components
 ---
 
@@ -52,6 +53,7 @@ export default () => {
 
   const handleClick = () => {
     const instance = chartRef.current?.getInstance();
+    console.log('instance:', instance);
     if (instance) {
       // 修改第三个数据点的颜色为红色
       instance.setOption({
@@ -90,7 +92,7 @@ export default () => {
 
   return (
     <div>
-      <button onClick={handleClick}>将第三个数据点改为红色</button>
+      <button onClick={handleClick}>将第三个数据点改为红色,查看控制台输出echarts的实例</button>
       <Chart ref={chartRef} options={options} height={400} />
     </div>
   );

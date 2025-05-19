@@ -1,7 +1,8 @@
 ---
 title: BarChart 柱状图
+order: 3
 nav:
-  title: 组件
+  title: 图表组件
   path: /components
 ---
 

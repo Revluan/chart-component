@@ -60,12 +60,6 @@ const Chart = forwardRef<ChartRef, ChartProps>(({
       // 设置图表配置
       instance.setOption(options);
 
-      // 监听窗口大小变化
-      const handleResize = () => {
-        instance.resize();
-      };
-
-      // 事件绑定
     if (onEvents) {
         Object.entries(onEvents).forEach(([event, handler]) =>
           instance.on(event, handler)

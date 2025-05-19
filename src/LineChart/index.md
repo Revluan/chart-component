@@ -1,21 +1,25 @@
 ---
 title: LineChart 折线图
+order: 2
 nav:
-  title: 组件
+  title: 图表组件
   path: /components
 ---
 
 # LineChart 折线图组件
 
 基于 ECharts 的折线图组件，提供了预设的样式配置和简化的数据接口。
+需要传入data: { xAxis, series }
 
 ## 基础用法
 
 ```tsx
 import { LineChart } from '@ucloud/cmp-chart-components';
-
 const data = {
-  xAxis: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
   series: [
     {
       name: '访问量',
@@ -27,23 +31,87 @@ const data = {
 export default () => <LineChart data={data} />;
 ```
 
+## x轴为时间的场景
+
+```tsx
+import { LineChart } from '@ucloud/cmp-chart-components';
+import moment from 'moment';
+
+const dataValue = [[1677722400, 10], [1677808800,20], [1677895200,30], [1677981600,80], [1678068000,50], [1678154400,20], [1678240800,90], [1678327200,40]];
+const formatValue = dataValue.map(i => ([moment(i[0]).format('MM-DD HH:mm:ss'), i[1]]));
+
+const data = {
+  series: [
+    {
+     name: '访问量',
+     data: formatValue
+    }
+  ]
+};
+
+const customOptions = {
+  xAxis: {
+     type: 'time'
+  }
+}
+
+export default () => <LineChart data={data} customOptions />;
+```
+
+## 带单位和进制转换的用法，一般用于监控数据图
+### 需要传入unitConfig配置项，包括当前的单位unit，单位的进制转换规则{ units, unitRule }[]
+
+```tsx
+import { LineChart } from '@ucloud/cmp-chart-components';
+
+const unitConfig = {
+  unit: '个',
+  unitRule: [
+      {
+        units: ['个', '百个'],
+        conversionFactor: 100
+      }
+  ]
+}
+
+const data = {
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  },
+  series: [
+    {
+      name: '访问量',
+      data: [150, 230, 224, 218, 135, 147, 260]
+    }
+  ]
+};
+
+export default () => <LineChart data={data} unitConfig={unitConfig} />;
+```
+
 ## 多折线图
 
 ```tsx
 import { LineChart } from '@ucloud/cmp-chart-components';
 
 const data = {
-  xAxis: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
   series: [
     {
       name: '访问量',
       data: [150, 230, 224, 218, 135, 147, 260],
-      color: '#165DFF'
     },
     {
       name: '下载量',
       data: [120, 132, 101, 134, 90, 230, 210],
-      color: '#0FC6C2'
+    },
+    {
+      name: '测试量',
+      data: [130, 100, 30, 50, 80, 130, 210],
     }
   ]
 };
@@ -57,7 +125,10 @@ export default () => <LineChart data={data} />;
 import { LineChart } from '@ucloud/cmp-chart-components';
 
 const data = {
-  xAxis: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
   series: [
     {
       name: '访问量',
@@ -77,7 +148,10 @@ import { LineChart } from '@ucloud/cmp-chart-components';
 import type { EChartsOption } from 'echarts';
 
 const data = {
-  xAxis: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
   series: [
     {
       name: '访问量',
@@ -118,7 +192,6 @@ export default () => (
 | --- | --- | --- | --- |
 | name | 系列名称 | `string` | - |
 | data | 数据数组 | `number[]` | - |
-| color | 线条颜色 | `string` | - |
 | smooth | 是否平滑曲线 | `boolean` | - |
 | showSymbol | 是否显示数据点标记 | `boolean` | - |
 | areaStyle | 是否显示面积 | `boolean` | - |

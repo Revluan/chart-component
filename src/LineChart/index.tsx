@@ -2,22 +2,23 @@ import React from 'react';
 import Chart from '../Chart';
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import type { ChartProps } from '../Chart';
-import { defaultLineChartOptions } from './defaultOptions';
+import { getEchartsOptions } from './defaultOptions';
 import { merge } from 'lodash';
+import getBaseToolTip from '../ChartUtils/tooltip';
+import { getAxisLabel, IUnitRule } from '../ChartUtils/unit-adapt';
 
 export interface LineChartProps extends Omit<ChartProps, 'options'> {
   /** 数据源 */
   data: {
-    xAxis: string[];
-    series: Array<{
-      name: string;
-      data: number[];
-      color?: string;
-      smooth?: boolean;
-      showSymbol?: boolean;
-      areaStyle?: boolean;
-    }>;
+    xAxis?: EChartsOption['xAxis'];
+    series: Array<LineSeriesOption>;
   };
+  unitConfig?: {
+    /** 原始单位 */
+    unit?: string;
+    /** 自定义单位转换规则 */
+    unitRule?: IUnitRule[];
+  },
   /** 自定义配置项，会与预设配置合并 */
   customOptions?: Partial<EChartsOption>;
 }
@@ -25,6 +26,7 @@ export interface LineChartProps extends Omit<ChartProps, 'options'> {
 const LineChart: React.FC<LineChartProps> = ({
   data,
   customOptions,
+  unitConfig,
   ...restProps
 }) => {
   // 生成 series 配置
@@ -32,13 +34,6 @@ const LineChart: React.FC<LineChartProps> = ({
     name: item.name,
     type: 'line',
     data: item.data,
-    smooth: item.smooth,
-    showSymbol: item.showSymbol,
-    symbol: 'circle',
-    symbolSize: 6,
-    itemStyle: {
-      color: item.color
-    },
     lineStyle: {
       width: 2
     },
@@ -50,15 +45,28 @@ const LineChart: React.FC<LineChartProps> = ({
   // 合并配置
   const options: EChartsOption = merge(
     {},
-    defaultLineChartOptions,
+    getEchartsOptions(),
+    {
+      tooltip: getBaseToolTip({
+        unit: unitConfig?.unit,
+        unitRule: unitConfig?.unitRule,
+        tooltipConfig: undefined,
+        shouldSliceTooltipName: false
+      }),
+      yAxis: {
+        axisLabel: {
+          formatter: unitConfig?.unit ? getAxisLabel({ unit: unitConfig?.unit, targetUnit: '', customUnitRule: unitConfig?.unitRule, precision: 1, showYAxisUnit: true }).formatter : undefined
+        }
+      }
+    },
     customOptions,
     {
-      xAxis: {
-        data: data.xAxis
-      },
+      xAxis: data.xAxis,
       series
     }
   );
+
+  console.log('options:', options);
 
   return <Chart options={options} {...restProps} />;
 };
