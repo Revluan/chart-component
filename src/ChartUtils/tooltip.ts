@@ -41,7 +41,18 @@ export default function getBaseToolTip(props: ITooltip): EChartsOption['tooltip'
         borderColor: DT?.T_COLOR_BG_DEFAULT_BRIGHT,
         confine: false, //限制tooltip在图表范围内展示
         className: 'textCss',
-        extraCssText: `max-height:80%;overflow:scroll;scrollbar-color:DarkGray Gray;scrollbar-width: thin;`,//最大高度以及超出处理
+        extraCssText: `
+            max-height: 80%;
+            overflow: auto;
+            /* 隐藏滚动条但保持滚动功能 */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            &::-webkit-scrollbar {
+                width: 0 !important;
+                height: 0 !important;
+                display: none !important;
+            }
+        `,
         formatter: (params: any) => {
             // 一般来说，params是一个数组，折线图，柱状图的params是数组,图的params是对象
             // 所以这边需要特殊处理，如果是对象，就转换成数组
@@ -105,7 +116,7 @@ export default function getBaseToolTip(props: ITooltip): EChartsOption['tooltip'
                             <div style="height: 18px; font-size: 14px; font-weight: 500; line-height: 14px; line-height: 18px; color: ${DT?.T_COLOR_TEXT_DEFAULT_LIGHT};">
                                 ${tooltipTitle}
                             </div>
-                            <div style="overflow-y:auto;max-height:100vh;">
+                            <div>
                                 ${result}
                             </div>
                         </div>

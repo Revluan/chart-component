@@ -1,32 +1,17 @@
 import React from 'react';
 import Chart from '../Chart';
 import type { EChartsOption, LineSeriesOption } from 'echarts';
-import type { ChartProps } from '../Chart';
 import { getEchartsOptions } from './defaultOptions';
 import { merge } from 'lodash';
 import getBaseToolTip from '../ChartUtils/tooltip';
-import { getAxisLabel, IUnitRule } from '../ChartUtils/unit-adapt';
-
-export interface LineChartProps extends Omit<ChartProps, 'options'> {
-  /** 数据源 */
-  data: {
-    xAxis?: EChartsOption['xAxis'];
-    series: Array<LineSeriesOption>;
-  };
-  unitConfig?: {
-    /** 原始单位 */
-    unit?: string;
-    /** 自定义单位转换规则 */
-    unitRule?: IUnitRule[];
-  },
-  /** 自定义配置项，会与预设配置合并 */
-  customOptions?: Partial<EChartsOption>;
-}
+import { getAxisLabel } from '../ChartUtils/unit-adapt';
+import type { LineChartProps } from './types';
 
 const LineChart: React.FC<LineChartProps> = ({
   data,
   customOptions,
   unitConfig,
+  type = 'category',
   ...restProps
 }) => {
   // 生成 series 配置
@@ -34,6 +19,8 @@ const LineChart: React.FC<LineChartProps> = ({
     name: item.name,
     type: 'line',
     data: item.data,
+    smooth: item.smooth,
+    showSymbol: item.showSymbol,
     lineStyle: {
       width: 2
     },
@@ -42,31 +29,48 @@ const LineChart: React.FC<LineChartProps> = ({
     } : undefined
   }));
 
-  // 合并配置
-  const options: EChartsOption = merge(
-    {},
-    getEchartsOptions(),
-    {
-      tooltip: getBaseToolTip({
-        unit: unitConfig?.unit,
-        unitRule: unitConfig?.unitRule,
-        tooltipConfig: undefined,
-        shouldSliceTooltipName: false
-      }),
-      yAxis: {
-        axisLabel: {
-          formatter: unitConfig?.unit ? getAxisLabel({ unit: unitConfig?.unit, targetUnit: '', customUnitRule: unitConfig?.unitRule, precision: 1, showYAxisUnit: true }).formatter : undefined
-        }
-      }
-    },
-    customOptions,
-    {
-      xAxis: data.xAxis,
-      series
-    }
-  );
+  // 基础配置
+  const baseOptions: Partial<EChartsOption> = {
+    xAxis: data.xAxis,
+    series
+  };
 
-  console.log('options:', options);
+  // 单位转换相关配置
+  const unitOptions: Partial<EChartsOption> = unitConfig?.unit ? {
+    tooltip: getBaseToolTip({
+      unit: unitConfig.unit,
+      unitRule: unitConfig.unitRule,
+      tooltipConfig: undefined,
+      shouldSliceTooltipName: false
+    }),
+    yAxis: {
+      axisLabel: {
+        formatter: getAxisLabel({
+          unit: unitConfig.unit,
+          targetUnit: '',
+          customUnitRule: unitConfig.unitRule,
+          precision: 1,
+          showYAxisUnit: true
+        }).formatter
+      }
+    }
+  } : {
+    tooltip: getBaseToolTip({
+      unit: '',
+      unitRule: [],
+      tooltipConfig: undefined,
+      shouldSliceTooltipName: false
+    })
+  };
+
+  // 合并所有配置
+  const options: EChartsOption = merge(
+    {}, // 空对象作为基础
+    getEchartsOptions(), // 默认配置
+    baseOptions, // 基础数据配置
+    unitOptions, // 单位转换配置
+    customOptions // 用户自定义配置（优先级最高）
+  );
 
   return <Chart options={options} {...restProps} />;
 };
